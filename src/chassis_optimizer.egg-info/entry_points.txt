@@ -1,0 +1,2 @@
+[console_scripts]
+chassis-optimizer = chassis_optimizer.cli.main:run

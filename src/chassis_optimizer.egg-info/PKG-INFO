@@ -1,3 +1,13 @@
+Metadata-Version: 2.4
+Name: chassis-optimizer
+Version: 0.1.0
+Summary: CLI scaffolding for early-stage chassis optimization studies
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: PyYAML>=6.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+
 # Chassis Optimizer
 
 Chassis Optimizer is a Python CLI project for early-stage monocoque shell studies using ANSYS MAPDL, focused on torsional rigidity in Nm/rad, relative mass reduction, keep-out volume constraints, and persistent design history.[1][2]
@@ -49,15 +59,3 @@ The first target is a shell-based monocoque workflow for concept-stage structura
 ## Contribution philosophy
 
 The project should grow through small, reviewable increments. Large one-shot changes are discouraged because they usually damage modularity, traceability, and reproducibility in engineering software.[3][4]
-
-## Phase 1 local setup (scaffold)
-
-- Python 3.11+ is required.
-- From the repository root, install the package in editable mode with dev tools:
-  - `python -m pip install -e ".[dev]"`
-- Show CLI help:
-  - `python -m chassis_optimizer --help`
-- Validate the example study configuration:
-  - `python -m chassis_optimizer validate-config examples/study_minimal.yaml`
-- Run tests:
-  - `python -m pytest`
