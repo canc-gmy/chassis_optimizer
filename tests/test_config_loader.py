@@ -14,5 +14,5 @@ def test_example_config_loads() -> None:
     config = YamlStudyConfigLoader().load(example_path)
 
     assert config.study_name == "phase1_baseline"
-    assert config.mesh.coarse_size > 0
-    assert config.mesh.fine_size > 0
+    assert config.mesh.coarse_size == 0.08
+    assert config.mesh.fine_size == 0.03

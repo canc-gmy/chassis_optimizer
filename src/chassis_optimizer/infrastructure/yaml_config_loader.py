@@ -25,6 +25,7 @@ def _build_study_config(raw_data: dict[str, Any]) -> StudyConfig:
     """Convert raw YAML mapping into a StudyConfig instance."""
     mesh_raw = raw_data.get("mesh", {})
     keep_out_raw = raw_data.get("keep_out_zones", [])
+    geometry_raw = raw_data.get("geometry", {})
 
     mesh = MeshConfig(
         coarse_size=float(mesh_raw.get("coarse_size", 0.0)),
@@ -46,6 +47,6 @@ def _build_study_config(raw_data: dict[str, Any]) -> StudyConfig:
         study_name=str(raw_data.get("study_name", "unnamed-study")),
         output_dir=output_dir,
         mesh=mesh,
-        geometry=raw_data.get("geometry", {}) if isinstance(raw_data.get("geometry", {}), dict) else {},
+        geometry=geometry_raw if isinstance(geometry_raw, dict) else {},
         keep_out_zones=keep_out_zones,
     )
