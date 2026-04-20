@@ -48,4 +48,33 @@ The first target is a shell-based monocoque workflow for concept-stage structura
 
 ## Contribution philosophy
 
-The project should grow through small, reviewable increments. Large one-shot changes are discouraged because they usually damage modularity, traceability, and reproducibility in engineering software.[3][4]
+The project should grow through small, reviewable increments. Large one-shot changes are discouraged because they usually damage modularity, traceability, and reproducibility in engineering software.[3][4]sh and fidelity
+
+- The system must support a coarse mesh for optimization.
+- The system must support a finer mesh for validation.
+- The first implementation must prioritize fast turnaround over maximum fidelity.
+
+### Data and outputs
+
+- The system must store results in a database.
+- The system must store geometry in a form suitable for future export.
+- The system must produce static plots and reports for each tested design.
+- The system must support torsional stiffness history plots and geometry history plotting.
+
+### User interface
+
+- The first version must be a CLI.
+- The design should allow a future GUI or web dashboard without rewriting the core.
+
+## Out of scope for version 1
+
+- GUI implementation.
+- Web dashboard implementation.
+- Composite laminate optimization.
+- Nonlinear analysis.
+- Distributed solve execution.
+- Detailed CAD reconstruction inside version 1.
+
+## Acceptance criteria
+
+The first usable version is complete when a user can define a study, generate one or more monocoque shell candidates, evaluate them in MAPDL, compute torsional rigidity in Nm/rad, estimate mass, assess symmetry and keep-out constraints, save everything in SQLite, and generate basic plots and reports.[1][2]
