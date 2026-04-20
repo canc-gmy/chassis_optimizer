@@ -1,0 +1,18 @@
+study_name: phase1_baseline
+output_dir: results/phase1_baseline
+
+geometry:
+  symmetry_plane: yz
+  control_points:
+    - [0.0, 0.0, 0.0]
+    - [1.2, 0.0, 0.0]
+
+mesh:
+  coarse_size: 0.08
+  fine_size: 0.03
+
+keep_out_zones:
+  - name: driver_cell
+    category: occupant
+  - name: suspension_pickups
+    category: hardpoint

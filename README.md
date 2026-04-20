@@ -49,3 +49,15 @@ The first target is a shell-based monocoque workflow for concept-stage structura
 ## Contribution philosophy
 
 The project should grow through small, reviewable increments. Large one-shot changes are discouraged because they usually damage modularity, traceability, and reproducibility in engineering software.[3][4]
+
+## Phase 1 local setup (scaffold)
+
+- Python 3.11+ is required.
+- From the repository root, install the package in editable mode with dev tools:
+  - `python -m pip install -e ".[dev]"`
+- Show CLI help:
+  - `python -m chassis_optimizer --help`
+- Validate the example study configuration:
+  - `python -m chassis_optimizer validate-config examples/study_minimal.yaml`
+- Run tests:
+  - `python -m pytest`
