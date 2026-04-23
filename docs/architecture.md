@@ -1,80 +1,84 @@
-# Chassis Optimizer
+# Architecture
 
-Chassis Optimizer is a Python CLI project for early-stage monocoque shell studies using ANSYS MAPDL, focused on torsional rigidity in Nm/rad, relative mass reduction, keep-out volume constraints, and persistent design history.[1][2]
+## Layer diagram
 
-## What this repository is
-
-This repository is the top-level entry point for the project. It explains what the software does, what problem it solves, who it is for, how the repository is organized, and how to start contributing. It is intentionally high-level and should help a new reader understand the project in a few minutes.
-
-## Project intent
-
-The first target is a shell-based monocoque workflow for concept-stage structural exploration, not final detailed certification. The user defines geometry in Python, the application translates that geometry into MAPDL-ready entities, runs a linear static torsional analysis, estimates mass, stores the design in SQLite, and generates plots and reports for later comparison.[1][2]
-
-## First-version capabilities
-
-- CLI-based workflow for local Windows use.
-- Shell geometry built from parameterized control points and panels.[1]
-- MAPDL-only linear static torsional evaluation.[1]
-- Wheel-center-based stiffness extraction in Nm/rad.
-- Symmetry and categorized keep-out zones.
-- Coarse optimization mesh and fine validation mesh.
-- SQLite-backed study and design history.
-- Static plots and per-design reports.
-
-## Repository map
-
-```text
-.
-├─ README.md
-├─ AGENTS.md
-├─ .github/
-│  └─ copilot-instructions.md
-├─ docs/
-│  ├─ spec.md
-│  ├─ architecture.md
-│  └─ tasks.md
-├─ src/
-├─ tests/
-└─ examples/
+```
+┌──────────────────────────────────────────────────────────┐
+│  cli  (chassis_optimizer.cli)                            │
+│  Entry point. Parses arguments. Calls application        │
+│  services. Owns no business logic.                       │
+└─────────────────────────┬────────────────────────────────┘
+                          │ uses
+┌─────────────────────────▼────────────────────────────────┐
+│  app  (chassis_optimizer.app)                            │
+│  Application services, typed config models, and port     │
+│  interfaces (Protocols). Depends only on domain.         │
+└────────────┬────────────────────────┬────────────────────┘
+             │ uses                   │ defines ports
+┌────────────▼──────────┐  ┌──────────▼─────────────────────┐
+│  domain               │  │  infrastructure                │
+│  (chassis_optimizer   │  │  (chassis_optimizer            │
+│   .domain)            │  │   .infrastructure)             │
+│  Pure value objects,  │  │  Adapters implementing ports:  │
+│  enums, and entities. │  │  YAML loader, SQLite repo,     │
+│  Zero dependencies.   │  │  MAPDL gateway (future).       │
+└───────────────────────┘  └────────────────────────────────┘
+             ▲
+             │ uses
+┌────────────┴──────────────────────────────────────────────┐
+│  services (chassis_optimizer.services)                    │
+│  Thin orchestrators. Wire app config + domain objects.    │
+│  Depend on app layer ports, never on infrastructure.      │
+└───────────────────────────────────────────────────────────┘
 ```
 
-## Which file to read next
+## Dependency rules
 
-- Read `AGENTS.md` if an AI coding agent will work in this repository.
-- Read `.github/copilot-instructions.md` for repository-wide coding guidance.
-- Read `docs/spec.md` for product requirements.
-- Read `docs/architecture.md` for module boundaries and design rules.
-- Read `docs/tasks.md` for phased implementation steps.
+- `domain` has zero imports from other project layers.
+- `app` imports from `domain` only.
+- `services` import from `app` and `domain` only.
+- `cli` imports from `services` and `app`.
+- `infrastructure` imports from `app` (to implement ports) and `domain`.
+- No layer may import from `cli`.
+- No layer may import from `infrastructure` except `cli` (for wiring at startup).
 
-## Contribution philosophy
+Violation of these rules constitutes a hard boundary break and must not be merged.
 
-The project should grow through small, reviewable increments. Large one-shot changes are discouraged because they usually damage modularity, traceability, and reproducibility in engineering software.[3][4]sh and fidelity
+## Package map
 
-- The system must support a coarse mesh for optimization.
-- The system must support a finer mesh for validation.
-- The first implementation must prioritize fast turnaround over maximum fidelity.
+| Package | Key modules | Responsibility |
+|---------|-------------|----------------|
+| `cli` | `main.py` | Argument parsing, top-level error handling, exit codes |
+| `app` | `config.py`, `ports.py` | Typed config dataclasses; Protocol port interfaces |
+| `domain` | `models.py` | `ControlPoint`, `Panel`, `ChassisGeometry`, `SymmetryPlane`, `Study` |
+| `services` | `study_service.py`, `geometry_service.py` | Thin orchestration: load config, build geometry |
+| `infrastructure` | `yaml_config_loader.py` | YAML → typed config; future: SQLite, MAPDL adapters |
 
-### Data and outputs
+## Coordinate convention
 
-- The system must store results in a database.
-- The system must store geometry in a form suitable for future export.
-- The system must produce static plots and reports for each tested design.
-- The system must support torsional stiffness history plots and geometry history plotting.
+| Axis | Direction |
+|------|-----------|
+| X | Forward (towards front axle) |
+| Y | Left (driver's left) |
+| Z | Up |
 
-### User interface
+All coordinate values are in SI metres. Angles are in radians unless stated otherwise.
 
-- The first version must be a CLI.
-- The design should allow a future GUI or web dashboard without rewriting the core.
+## Geometry model
 
-## Out of scope for version 1
+A `ChassisGeometry` groups:
+- `symmetry_plane` — a `SymmetryPlane` enum value (`XY`, `YZ`, `XZ`).
+- `control_points` — an ordered list of `ControlPoint` objects (x, y, z in metres).
+- `panels` — a list of `Panel` objects. Each panel has a name, a list of
+  `ControlPoint` positions, and an optional shell thickness in metres.
 
-- GUI implementation.
-- Web dashboard implementation.
-- Composite laminate optimization.
-- Nonlinear analysis.
-- Distributed solve execution.
-- Detailed CAD reconstruction inside version 1.
+Panels reference control points directly (by value, not by index), so the domain layer
+remains independent of YAML parsing details.
 
-## Acceptance criteria
+## Adding a new module
 
-The first usable version is complete when a user can define a study, generate one or more monocoque shell candidates, evaluate them in MAPDL, compute torsional rigidity in Nm/rad, estimate mass, assess symmetry and keep-out constraints, save everything in SQLite, and generate basic plots and reports.[1][2]
+1. Place it in the correct layer package.
+2. Add a module-level docstring describing purpose and import rules.
+3. Do not import from a layer above your own.
+4. Add unit tests under `tests/`.
+5. Update `docs/tasks.md` if this satisfies a planned task.

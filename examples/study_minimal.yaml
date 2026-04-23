@@ -1,18 +1,47 @@
+# Minimal study configuration for Chassis Optimizer Phase 2.
+# Use this file as a template and copy it when starting a new study.
+
+# Unique identifier for this study run (used as folder name and DB key).
 study_name: phase1_baseline
+
+# Directory where plots, reports, and solver output are written.
+# Relative paths are resolved from the working directory.
 output_dir: results/phase1_baseline
 
 geometry:
+  # Symmetry plane of the monocoque shell.
+  # Valid values: XY (floor plane), YZ (left/right split), XZ (side plane).
+  # YZ is the most common choice for a symmetric left-right vehicle.
   symmetry_plane: yz
+
+  # Control points that define the shell envelope.
+  # Format: [x, y, z] in SI metres.
+  # Coordinate convention: X forward (towards front axle),
+  #                        Y left (driver's left),
+  #                        Z up.
+  # Only the half-model is required when symmetry_plane is YZ.
   control_points:
-    - [0.0, 0.0, 0.0]
-    - [1.2, 0.0, 0.0]
+    - [0.0, 0.0, 0.0]   # index 0 — rear bulkhead bottom centre
+    - [1.2, 0.0, 0.0]   # index 1 — front bulkhead bottom centre
+
+  # Named shell panels.  Each panel references control points by their
+  # zero-based index in the control_points list above.
+  # thickness is in metres; omit the key if unassigned.
+  panels:
+    - name: floor_centre
+      indices: [0, 1]
+      thickness: 0.003   # 3 mm CFRP/aluminium honeycomb shell
 
 mesh:
+  # Element size for fast optimisation sweeps (metres).
   coarse_size: 0.08
+  # Element size for high-fidelity validation runs (metres).
   fine_size: 0.03
 
+# Regions that must remain free of shell material.
+# category vocabulary: occupant | hardpoint | powertrain | aero
 keep_out_zones:
   - name: driver_cell
-    category: occupant
+    category: occupant       # FIA/FSAE mandatory driver protection volume
   - name: suspension_pickups
-    category: hardpoint
+    category: hardpoint      # front and rear suspension attachment points

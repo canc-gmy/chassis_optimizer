@@ -1,4 +1,8 @@
-"""CLI behavior tests."""
+"""CLI behavior tests.
+
+Tests that exercise :func:`chassis_optimizer.cli.main.run` at the argument-
+parsing and exit-code level without requiring a real YAML file or solver.
+"""
 
 from __future__ import annotations
 
