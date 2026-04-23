@@ -53,8 +53,11 @@ The project should grow through small, reviewable increments. Large one-shot cha
 ## Phase 1 local setup (scaffold)
 
 - Python 3.11+ is required.
-- From the repository root, install the package in editable mode with dev tools:
-  - `python -m pip install -e ".[dev]"`
+- From the repository root, create `.venv` and install the package with dev tools:
+  - `python scripts/bootstrap_venv.py`
+- Activate the virtual environment:
+  - Windows: `.\.venv\Scripts\activate`
+  - macOS/Linux: `source .venv/bin/activate`
 - Show CLI help:
   - `python -m chassis_optimizer --help`
 - Validate the example study configuration:
