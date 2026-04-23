@@ -16,6 +16,15 @@ def _venv_python(venv_dir: Path) -> Path:
     return venv_dir / "bin" / "python"
 
 
+def _run_step(command: list[str], cwd: Path, step_name: str) -> int:
+    try:
+        subprocess.run(command, cwd=cwd, check=True)
+    except subprocess.CalledProcessError as exc:
+        print(f"{step_name} failed with exit code {exc.returncode}.", file=sys.stderr)
+        return exc.returncode
+    return 0
+
+
 def main() -> int:
     repo_root = Path(__file__).resolve().parents[1]
     venv_dir = repo_root / ".venv"
@@ -32,17 +41,22 @@ def main() -> int:
         return 1
 
     print("Upgrading pip in virtual environment...")
-    subprocess.run(
+    rc = _run_step(
         [str(venv_python), "-m", "pip", "install", "--upgrade", "pip"],
         cwd=repo_root,
-        check=True,
+        step_name="Pip upgrade",
     )
+    if rc != 0:
+        return rc
+
     print("Installing project in editable mode with dev dependencies...")
-    subprocess.run(
+    rc = _run_step(
         [str(venv_python), "-m", "pip", "install", "-e", ".[dev]"],
         cwd=repo_root,
-        check=True,
+        step_name="Project dependency installation",
     )
+    if rc != 0:
+        return rc
 
     print("\nEnvironment ready.")
     if os.name == "nt":
