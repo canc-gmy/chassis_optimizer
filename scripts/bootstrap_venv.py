@@ -18,9 +18,20 @@ def _venv_python(venv_dir: Path) -> Path:
 
 def _run_step(command: list[str], cwd: Path, step_name: str) -> int:
     try:
-        subprocess.run(command, cwd=cwd, check=True, text=True, stderr=subprocess.PIPE)
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        if result.stdout:
+            print(result.stdout, end="")
     except subprocess.CalledProcessError as exc:
         print(f"{step_name} failed with exit code {exc.returncode}.", file=sys.stderr)
+        if exc.stdout:
+            print(exc.stdout, end="", file=sys.stderr)
         if exc.stderr:
             print(exc.stderr, file=sys.stderr)
         return exc.returncode
@@ -35,7 +46,7 @@ def main() -> int:
         print(f"Creating virtual environment at: {venv_dir}")
         try:
             venv.EnvBuilder(with_pip=True).create(venv_dir)
-        except Exception as exc:  # pragma: no cover - defensive path
+        except OSError as exc:  # pragma: no cover - defensive path
             print(f"Virtual environment creation failed: {exc}", file=sys.stderr)
             return 1
     else:
