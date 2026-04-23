@@ -1,80 +1,83 @@
-# Chassis Optimizer
+# Product Specification
 
-Chassis Optimizer is a Python CLI project for early-stage monocoque shell studies using ANSYS MAPDL, focused on torsional rigidity in Nm/rad, relative mass reduction, keep-out volume constraints, and persistent design history.[1][2]
+## Problem statement
 
-## What this repository is
+Formula SAE and similar competition vehicle programmes need a monocoque chassis design
+that is structurally stiff in torsion, as light as possible, and free from clashes with
+mandatory keep-out volumes (driver cell, suspension pick-ups, powertrain envelope).
+Today this exploration is done manually: one-at-a-time FEA runs, disconnected
+spreadsheets, and no design history. The result is slow iteration and poor traceability.
 
-This repository is the top-level entry point for the project. It explains what the software does, what problem it solves, who it is for, how the repository is organized, and how to start contributing. It is intentionally high-level and should help a new reader understand the project in a few minutes.
+Chassis Optimizer provides a scriptable, CLI-driven shell for concept-stage monocoque
+studies using ANSYS MAPDL, giving a small team the ability to evaluate dozens of
+parameterised shell variants in one sitting and to compare results over time.
 
-## Project intent
+## Context
 
-The first target is a shell-based monocoque workflow for concept-stage structural exploration, not final detailed certification. The user defines geometry in Python, the application translates that geometry into MAPDL-ready entities, runs a linear static torsional analysis, estimates mass, stores the design in SQLite, and generates plots and reports for later comparison.[1][2]
+- Target vehicle class: FSAE / FS monocoque chassis, aluminium honeycomb or CFRP shell.
+- Analysis fidelity: linear static torsional loading only (concept stage, not certification).
+- Primary metric: torsional rigidity in Nm/rad measured between front and rear wheel centres.
+- Secondary metric: relative shell mass as a proxy for weight.
+- Constraint system: categorised keep-out zones (occupant, hardpoint, powertrain).
 
-## First-version capabilities
+## First-version capability list
 
-- CLI-based workflow for local Windows use.
-- Shell geometry built from parameterized control points and panels.[1]
-- MAPDL-only linear static torsional evaluation.[1]
-- Wheel-center-based stiffness extraction in Nm/rad.
-- Symmetry and categorized keep-out zones.
-- Coarse optimization mesh and fine validation mesh.
-- SQLite-backed study and design history.
-- Static plots and per-design reports.
+- CLI-based workflow for local Windows use with ANSYS installed.
+- Shell geometry built from parameterised control points and named panels.
+- MAPDL-only linear static torsional evaluation.
+- Wheel-centre-based torsional stiffness extraction in Nm/rad.
+- Symmetry plane declaration and categorised keep-out zones.
+- Coarse optimisation mesh and fine validation mesh sizes.
+- SQLite-backed study and design-history storage.
+- Static matplotlib plots and per-design text reports.
 
-## Repository map
+## Requirements
 
-```text
-.
-├─ README.md
-├─ AGENTS.md
-├─ .github/
-│  └─ copilot-instructions.md
-├─ docs/
-│  ├─ spec.md
-│  ├─ architecture.md
-│  └─ tasks.md
-├─ src/
-├─ tests/
-└─ examples/
-```
+### Geometry
 
-## Which file to read next
+- The system must accept control-point coordinates in SI metres (X forward, Y left, Z up).
+- The system must accept a symmetry plane declaration (`XY`, `YZ`, or `XZ`).
+- The system must accept named shell panels referencing control points by position index.
+- The system must validate geometry before submitting to MAPDL.
 
-- Read `AGENTS.md` if an AI coding agent will work in this repository.
-- Read `.github/copilot-instructions.md` for repository-wide coding guidance.
-- Read `docs/spec.md` for product requirements.
-- Read `docs/architecture.md` for module boundaries and design rules.
-- Read `docs/tasks.md` for phased implementation steps.
+### Analysis
 
-## Contribution philosophy
+- The system must run a linear static analysis using ANSYS MAPDL.
+- The system must extract torsional rigidity in Nm/rad from wheel-centre displacements.
+- The system must estimate shell mass from panel area and assigned thickness.
 
-The project should grow through small, reviewable increments. Large one-shot changes are discouraged because they usually damage modularity, traceability, and reproducibility in engineering software.[3][4]sh and fidelity
+### Mesh and fidelity
 
-- The system must support a coarse mesh for optimization.
-- The system must support a finer mesh for validation.
-- The first implementation must prioritize fast turnaround over maximum fidelity.
+- The system must support a coarse mesh for optimisation runs.
+- The system must support a finer mesh for validation runs.
+- The first implementation must prioritise fast turnaround over maximum fidelity.
 
 ### Data and outputs
 
-- The system must store results in a database.
-- The system must store geometry in a form suitable for future export.
+- The system must store each study run in an SQLite database.
+- The system must store geometry in a form suitable for later export or replay.
 - The system must produce static plots and reports for each tested design.
-- The system must support torsional stiffness history plots and geometry history plotting.
+- The system must support torsional stiffness history plots across designs.
 
 ### User interface
 
-- The first version must be a CLI.
-- The design should allow a future GUI or web dashboard without rewriting the core.
+- The first version must be a CLI accepting a YAML configuration file.
+- The architecture must allow a future GUI or web dashboard without rewriting the core.
 
 ## Out of scope for version 1
 
-- GUI implementation.
-- Web dashboard implementation.
-- Composite laminate optimization.
-- Nonlinear analysis.
-- Distributed solve execution.
-- Detailed CAD reconstruction inside version 1.
+- GUI or web dashboard.
+- Composite laminate optimisation (fibre angle, stack-up).
+- Nonlinear or dynamic analysis.
+- Distributed or cloud-based solve execution.
+- Detailed CAD reconstruction or export to STEP/IGES.
 
 ## Acceptance criteria
 
-The first usable version is complete when a user can define a study, generate one or more monocoque shell candidates, evaluate them in MAPDL, compute torsional rigidity in Nm/rad, estimate mass, assess symmetry and keep-out constraints, save everything in SQLite, and generate basic plots and reports.[1][2]
+Version 1 is complete when a user can:
+
+1. Author a YAML study file with geometry, mesh, and keep-out zone declarations.
+2. Run the CLI to validate and load that file without errors.
+3. Invoke the geometry service to obtain a fully typed `ChassisGeometry` object.
+4. (Future) Submit the geometry to MAPDL, run a torsional analysis, and receive Nm/rad.
+5. (Future) Save the result to SQLite and render a basic plot and report.

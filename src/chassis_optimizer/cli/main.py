@@ -1,4 +1,30 @@
-"""Command-line interface for chassis_optimizer."""
+"""Command-line interface for chassis_optimizer.
+
+This module is the top-level entry point for all user-facing commands.  It
+owns argument parsing, high-level error handling, and exit codes.  All
+business logic is delegated to service classes.
+
+Public functions
+----------------
+build_parser() -> argparse.ArgumentParser
+    Construct and return the argument parser with all registered sub-commands.
+run(argv) -> int
+    Parse *argv* (or ``sys.argv[1:]`` when *argv* is ``None``), dispatch to
+    the appropriate sub-command handler, and return an integer exit code.
+
+Exit codes
+----------
+0
+    Success.
+1
+    User-visible error (file not found, YAML parse failure, validation error).
+
+Import rules
+------------
+May import from ``chassis_optimizer.app``, ``chassis_optimizer.services``,
+and ``chassis_optimizer.infrastructure``.  Must not be imported by any other
+project layer.
+"""
 
 from __future__ import annotations
 

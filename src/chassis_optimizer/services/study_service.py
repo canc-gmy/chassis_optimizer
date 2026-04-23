@@ -1,4 +1,20 @@
-"""Application services for study lifecycle operations."""
+"""Application services for study lifecycle operations.
+
+Services are thin orchestrators.  They accept port interfaces injected at
+construction time and co-ordinate calls between the infrastructure and
+domain layers without containing business logic themselves.
+
+Public classes
+--------------
+StudyService
+    Manages study configuration loading via an injected
+    :class:`~chassis_optimizer.app.ports.StudyConfigLoader` adapter.
+
+Import rules
+------------
+May import from ``chassis_optimizer.app`` and ``chassis_optimizer.domain``
+only.  Must not import from ``chassis_optimizer.infrastructure`` or ``cli``.
+"""
 
 from __future__ import annotations
 
